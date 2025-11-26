@@ -9,7 +9,6 @@ using WebApiTransfer.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddDbContext<AppDbTransferContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -38,11 +37,13 @@ builder.Services.AddMvc(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 app.UseCors(policy =>
     policy.AllowAnyOrigin()
           .AllowAnyMethod()
           .AllowAnyHeader());
+
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.UseSwagger();
 app.UseSwaggerUI();
@@ -54,14 +55,11 @@ app.MapControllers();
 var dirImageName = builder.Configuration
     .GetValue<string>("DirImageName") ?? "duplo";
 
-// Console.WriteLine("Image dir {0}", dirImageName);
-var path = Path.Combine(Directory.GetCurrentDirectory(), dirImageName);
-Directory.CreateDirectory(dirImageName);
+var wwwrootPath = app.Environment.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(path),
-    RequestPath = $"/{dirImageName}"
-});
+var imagePath = Path.Combine(wwwrootPath, dirImageName);
+
+Directory.CreateDirectory(imagePath);
+
 
 app.Run();

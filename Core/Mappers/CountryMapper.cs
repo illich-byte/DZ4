@@ -11,7 +11,7 @@ public class CountryMapper : Profile
         CreateMap<CountryEntity, CountryItemModel>();
 
         CreateMap<CountryCreateModel, CountryEntity>()
-            .ForMember(x=>x.Image, opt=>opt.Ignore());
+            .ForMember(x => x.Image, opt => opt.Ignore());
 
         CreateMap<CountryUpdateModel, CountryEntity>()
             .ForMember(x => x.Image, opt => opt.Ignore());

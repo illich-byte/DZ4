@@ -6,18 +6,22 @@ using Microsoft.AspNetCore.Http;
 
 namespace Core.Validators.Country;
 
-public class CountryCreateValidator : AbstractValidator<CountryCreateModel>
+public class CountryUpdateValidator : AbstractValidator<CountryUpdateModel>
 {
-    public CountryCreateValidator(AppDbTransferContext db)
+    public CountryUpdateValidator(AppDbTransferContext db)
     {
+        RuleFor(x => x.Id)
+            .NotEmpty().WithMessage("ID країни є обов'язковим для оновлення.");
+
         RuleFor(x => x.Name)
             .NotEmpty().WithMessage("Назва країни не може бути порожньою")
             .MaximumLength(100).WithMessage("Назва країни не може перевищувати 100 символів")
             .DependentRules(() =>
             {
                 RuleFor(x => x.Name)
-                    .MustAsync(async (name, cancellation) =>
-                        !await db.Countries.AnyAsync(c => c.Name.ToLower() == name.ToLower().Trim(), cancellation))
+                    .MustAsync(async (model, name, cancellation) =>
+                        !await db.Countries
+                            .AnyAsync(c => c.Id != model.Id && c.Name.ToLower() == name.ToLower().Trim(), cancellation))
                     .WithMessage("Країна з такою назвою вже існує");
             });
 
@@ -29,10 +33,12 @@ public class CountryCreateValidator : AbstractValidator<CountryCreateModel>
             .NotEmpty().WithMessage("Slug країни не може бути порожнім")
             .MaximumLength(100).WithMessage("Slug країни не може перевищувати 100 символів");
 
-        RuleFor(x => x.Image)
-            .NotNull().WithMessage("Файл зображення є обов'язковим")
-            .Must(BeAValidFileSize).WithMessage("Розмір файлу не повинен перевищувати 5MB.")
-            .Must(BeAValidFileType).WithMessage("Дозволені формати файлів: JPG, PNG, GIF.");
+        When(x => x.Image != null, () =>
+        {
+            RuleFor(x => x.Image!)
+                .Must(BeAValidFileSize).WithMessage("Розмір файлу не повинен перевищувати 5MB.")
+                .Must(BeAValidFileType).WithMessage("Дозволені формати файлів: JPG, PNG, GIF.");
+        });
     }
 
     private bool BeAValidFileSize(IFormFile file)
