@@ -54,7 +54,6 @@ public class CountryService(AppDbTransferContext appDbContext,
             entity.Image = await imageService.UploadImageAsync(model.Image);
         }
 
-        //appDbContext.Countries.Update(entity);
         await appDbContext.SaveChangesAsync();
 
         var item = mapper.Map<CountryItemModel>(entity);
